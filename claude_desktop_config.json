@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "blender-server": {
+      "command": "python3",
+      "args": [
+        "/Users/gajanmohanraj/Documents/afterquery/candidate-1767282743/blender_takehome/"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/gajanmohanraj/Documents/afterquery/candidate-1767282743/blender_takehome:/Users/gajanmohanraj/Documents/afterquery/candidate-1767282743/blender_takehome/src"
+      }
+    }
+  }
+}
+

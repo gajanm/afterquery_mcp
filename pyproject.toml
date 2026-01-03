@@ -1,0 +1,27 @@
+[project]
+name = "blender_server"
+version = "0.1.0"
+description = "MCP server for Blender operations"
+requires-python = ">=3.13"
+dependencies = [
+    "fastmcp>=2.12.4",
+    "pydantic>=2.0.0",
+    "fake-bpy-module-latest",  # Type stubs for bpy (for development without Blender installed)
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pyright>=1.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+
