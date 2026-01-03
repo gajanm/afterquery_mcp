@@ -1,7 +1,3 @@
-# Blender MCP Server
-
-A Model Context Protocol (MCP) server that allows AI agents (like Claude Desktop) to control Blender through a clean, validated API. Create 3D scenes, manipulate objects, apply materials, and render images - all through natural language commands.
-
 ## Prerequisites
 
 Before you begin, make sure you have:
@@ -104,28 +100,10 @@ Once connected to Claude Desktop, you can ask Claude to:
 - "Create a material called 'Metal' with color (0.8, 0.8, 0.9)"
 - "Render the scene to /path/to/output.png"
 - "List all objects in the scene"
+- "Save the current file as "_______/Project.blend"
 
 Claude will use the MCP tools to execute these commands in Blender.
 
-## Troubleshooting
-
-### Blender doesn't open when Claude starts
-
-- Check that Blender is installed at the expected path
-- Verify the paths in `claude_desktop_config.json` are correct
-- Check Claude Desktop logs for errors
-
-### "Module not found" errors
-
-- Ensure `PYTHONPATH` is set correctly in the config
-- Verify dependencies are installed: `pip install -e .`
-- Check that `src/` directory exists
-
-### Blender window doesn't appear
-
-- On macOS, check System Preferences → Security & Privacy → Privacy → Accessibility
-- Ensure Terminal/Python has permission to control other apps
-- Try manually launching Blender first to verify it works
 
 ## Project Structure
 
@@ -142,11 +120,78 @@ blender_takehome/
 └── pyproject.toml      # Python dependencies
 ```
 
-## Architecture
+## Design Choices
 
 The server follows a three-layer architecture:
 
 1. **Models** (`src/models.py`) - Pydantic models validate all inputs
 2. **Operations** (`src/operations.py`) - Pure functions that interact with Blender's bpy API
 3. **Tools** (`src/tools.py`) - MCP tool wrappers that expose operations to AI agents
+
+I decided to separate this project into this three-layer architecture in order to isolate where errors were occuring very easily. This helped a lot in the debugging process. This has also simplified the creation of adding new tools within the MCP arsenal.
+
+All that needs to be done to add a new tale is:
+
+1. **Add model** in `src/models.py`:
+   ```python
+   class MyToolInput(BaseModel):
+       param: str = Field(...)
+   ```
+
+2. **Add operation** in `src/operations.py`:
+   ```python
+   def my_operation(input: MyToolInput) -> str:
+       # Blender code here
+       return "Success: ..."
+   ```
+
+3. **Add tool** in `src/tools.py`:
+   ```python
+   @mcp.tool()
+   async def my_tool_tool(param: str) -> str:
+       input_model = MyToolInput(param=param)
+       return my_operation(input_model)
+   ```
+
+That's it! FastMCP automatically registers the tool.
+
+### Tool Call Flow
+
+```
+1. Claude Desktop sends JSON-RPC request:
+   {"method": "tools/call", "params": {"name": "create_cube_tool", "arguments": {...}}}
+
+2. FastMCP receives request, routes to create_cube_tool()
+
+3. tools.py: create_cube_tool() validates input with CreateCubeInput
+
+4. operations.py: create_cube() executes bpy.ops.mesh.primitive_cube_add()
+
+5. Blender creates cube, updates scene
+
+6. operations.py: Returns success message string
+
+7. tools.py: Returns string to FastMCP
+
+8. FastMCP sends JSON-RPC response:
+   {"result": {"content": [{"type": "text", "text": "Successfully created cube..."}]}}
+
+9. Claude Desktop receives response
+```
+
+### Error Flow
+
+```
+1. Invalid input (e.g., size = -1.0)
+
+2. Pydantic validation fails in models.py
+
+3. ValidationError raised with clear message
+
+4. tools.py catches exception, returns "Error: size must be > 0.001"
+
+5. FastMCP sends error response to Claude Desktop
+
+6. Server continues running (no crash)
+```
 
