@@ -51,41 +51,13 @@ This is the easiest way to use the server with Claude Desktop:
    }
    ```
 
-3. **Restart Claude Desktop** - it will automatically launch the Blender MCP server when you start a conversation.
+3. **Now Open Blender** -- the Blender MCP server will automatically be running now.
 
-4. **Verify it's working**: Ask Claude to create a cube in Blender. You should see Blender open and a cube appear!
+4. **Restart Claude Desktop** - it will automatically launch the Blender MCP server when you start a conversation.
+
+5. **Start Experimenting**: Ask Claude to create a cube in Blender. You should see Blender open and a cube appear!
 
 ### Option 2: Manual Launch (For Testing)
-
-To test the server manually:
-
-```bash
-# Set the PYTHONPATH environment variable
-export PYTHONPATH="/path/to/blender_takehome:/path/to/blender_takehome/src"
-
-# Run the filter script
-python3 blender_mcp_filter.py
-```
-
-This will:
-- Launch Blender automatically
-- Start the MCP server inside Blender
-- Filter stdout for clean JSON-RPC communication
-
-### Option 3: Blender Addon (Alternative)
-
-If you prefer to control Blender manually:
-
-1. **Install the addon**:
-   - Open Blender
-   - Go to Edit → Preferences → Add-ons
-   - Click "Install..." and select `blender_mcp_addon.py`
-   - Enable the addon
-
-2. **Start the server**:
-   - In Blender's 3D Viewport, open the sidebar (press `N`)
-   - Find the "BlenderMCP" panel
-   - Click "Connect to Claude"
 
 ## List of Tools Implemented
 
@@ -170,7 +142,6 @@ blender_takehome/
 │   └── server.py      # FastMCP server setup
 ├── blender_mcp_filter.py    # Launches Blender and filters stdout
 ├── blender_mcp_server.py   # Entry point script for Blender
-├── blender_mcp_addon.py    # Optional Blender addon
 ├── claude_desktop_config.json  # Claude Desktop configuration
 └── pyproject.toml      # Python dependencies
 ```
@@ -183,8 +154,3 @@ The server follows a three-layer architecture:
 2. **Operations** (`src/operations.py`) - Pure functions that interact with Blender's bpy API
 3. **Tools** (`src/tools.py`) - MCP tool wrappers that expose operations to AI agents
 
-See `ARCHITECTURE.md` for detailed design documentation.
-
-## License
-
-[Add your license here]
